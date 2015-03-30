@@ -69,7 +69,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     QHash<int, QByteArray> roleNames() const;
 
-    void append(QList<QVariant>);
+    Q_INVOKABLE void append(QList<QVariant>);
     Q_INVOKABLE void clear();
     Q_INVOKABLE QVariant get(int i) const;
 

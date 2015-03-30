@@ -833,5 +833,15 @@ Remorse popup message telling the user video download will be removed</extracomm
         <extracomment>Title for recently watched videos page</extracomment>
         <translation>Watched recently</translation>
     </message>
+    <message id="ytplayer-title-play-in">
+        <source>Play in</source>
+        <extracomment>Title of play in page</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="ytplayer-action-play-in">
+        <source>Play video in</source>
+        <extracomment>Menu option triggering play video in dialog</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

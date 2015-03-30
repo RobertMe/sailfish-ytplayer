@@ -58,6 +58,7 @@
 #include "YTRequest.h"
 #include "YTLogger.h"
 #include "YTPrefs.h"
+#include "YTPlayerDiscovery.h"
 
 namespace {
 const QString kApplicationDBFileName = "YTPlayer.sqlite";
@@ -172,6 +173,7 @@ main(int argc, char *argv[])
     qmlRegisterType<YTLocalVideoListModel>("harbour.ytplayer", 1, 0, "YTLocalVideoListModel");
     qmlRegisterType<YTVideoDownloadNotification>("harbour.ytplayer", 1, 0, "YTVideoDownloadNotification");
     qmlRegisterType<YTSuggestionEngine>("harbour.ytplayer", 1, 0, "YTSuggestionEngine");
+    qmlRegisterType<YTPlayerDiscovery>("harbour.ytplayer", 1, 0, "YTPlayerDiscovery");
 
     qmlRegisterUncreatableType<YTLogger>("harbour.ytplayer", 1, 0, "YTLogger",
                                          "Please use global Log instance");

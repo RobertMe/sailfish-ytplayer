@@ -256,6 +256,14 @@ Page {
 
         PullDownMenu {
             MenuItem {
+                //: Menu option triggering play video in dialog
+                //% "Play video in"
+                text: qsTrId("ytplayer-action-play-in")
+                onClicked: pageStack.push(Qt.resolvedUrl("PlayIn.qml"),
+                                          {"videoId": videoId})
+            }
+
+            MenuItem {
                 visible: localVideo.canDownload && priv.hasDirectVideoUrl
                 //: Menu option triggering video preload
                 //% "Download video"

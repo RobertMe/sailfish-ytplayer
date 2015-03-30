@@ -65,5 +65,6 @@
         <file>qml/pages/TranslationCredits.qml</file>
         <file>qml/common/MainMenuSectionHeader.qml</file>
         <file>qml/pages/WatchedRecently.qml</file>
+        <file>qml/pages/PlayIn.qml</file>
     </qresource>
 </RCC>
