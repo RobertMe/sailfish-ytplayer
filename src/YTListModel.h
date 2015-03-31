@@ -72,6 +72,9 @@ public:
     Q_INVOKABLE void append(QList<QVariant>);
     Q_INVOKABLE void clear();
     Q_INVOKABLE QVariant get(int i) const;
+    Q_INVOKABLE int find(const QString &property, const QVariant &value) const;
+    Q_INVOKABLE void remove(int index);
+    Q_INVOKABLE void remove(const QString &property, const QVariant &value);
 
 signals:
     void countChanged(int);

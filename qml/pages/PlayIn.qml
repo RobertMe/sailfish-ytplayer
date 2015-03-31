@@ -39,6 +39,10 @@ Page {
         discovery.start();
     }
 
+    Component.onDestruction: {
+        discovery.dispose();
+    }
+
     SilicaListView {
         anchors.fill: parent
 

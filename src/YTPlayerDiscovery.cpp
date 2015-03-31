@@ -8,19 +8,31 @@
 #include "MprisApplication.h"
 
 YTPlayerDiscovery::YTPlayerDiscovery(QObject *parent) :
-    QThread(parent)
+    QThread(parent),
+    _serviceWatcher(QString(), QDBusConnection::sessionBus())
 {
+    moveToThread(this);
+}
+
+void
+YTPlayerDiscovery::dispose()
+{
+    exit();
+    delete this;
 }
 
 void
 YTPlayerDiscovery::run()
 {
+    connect(&_serviceWatcher, &QDBusServiceWatcher::serviceOwnerChanged, this, &YTPlayerDiscovery::onServiceOwnerChanged);
     QList<QVariant> services;
     QDBusReply<QStringList> registeredServiceNames = QDBusConnection::sessionBus().interface()->registeredServiceNames();
     foreach (QString serviceName, registeredServiceNames.value()) {
         handleServiceName(serviceName, services);
     }
-    QMetaObject::invokeMethod(_model, "append", Qt::QueuedConnection, Q_ARG(QList<QVariant>, services));
+    appendServices(services);
+
+    exec();
 }
 
 void
@@ -73,4 +85,28 @@ YTPlayerDiscovery::handleServiceName(const QString &serviceName, QList<QVariant>
     service.insert("name", name);
     service.insert("icon", iconPath);
     services.append(service);
+}
+
+void
+YTPlayerDiscovery::appendServices(const QList<QVariant> &services)
+{
+    if (services.size() > 0) {
+        QMetaObject::invokeMethod(_model, "append", Qt::QueuedConnection, Q_ARG(QList<QVariant>, services));
+    }
+}
+
+void
+YTPlayerDiscovery::onServiceOwnerChanged(const QString &service, const QString &oldOwner, const QString &newOwner)
+{
+    if (!oldOwner.isEmpty()) {
+        if (service.startsWith("org.mpris.MediaPlayer2.")) {
+            QMetaObject::invokeMethod(_model, "remove", Qt::QueuedConnection, Q_ARG(QString, "serviceName"), Q_ARG(QVariant, QVariant(service)));
+        }
+    }
+
+    if (!newOwner.isEmpty()) {
+        QList<QVariant> services;
+        handleServiceName(service, services);
+        appendServices(services);
+    }
 }

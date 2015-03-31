@@ -123,6 +123,46 @@ YTListModel::initializeRoles(QList<QVariant>& list)
     }
 }
 
+int
+YTListModel::find(const QString &property, const QVariant &value) const
+{
+    if (property.isEmpty()) {
+        for (int i = 0; i < _list.size(); i++) {
+            if (_list.at(i) == value) {
+                return i;
+            }
+        }
+    } else {
+        for (int i = 0; i < _list.size(); i++) {
+            if (_list.at(i).toMap()[property] == value) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+void
+YTListModel::remove(int index)
+{
+    if (index < 0 || index >= _list.size()) {
+        return;
+    }
+
+    emit beginRemoveRows(QModelIndex(), index, index);
+    _list.removeAt(index);
+    emit endRemoveRows();
+}
+
+void
+YTListModel::remove(const QString &property, const QVariant &value)
+{
+    int index = find(property, value);
+    if (index >= 0) {
+        remove(index);
+    }
+}
+
 void
 YTListModel::filter(QList<QVariant>& list)
 {
