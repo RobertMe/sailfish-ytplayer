@@ -87,6 +87,14 @@ public Q_SLOTS: // METHODS
     }
 
 Q_SIGNALS: // SIGNALS
+    void identityChanged();
+
+private:
+    void connectPropertyChanged();
+    void disconnectPropertyChanged();
+
+private slots:
+    void onPropertiesChanged(const QString &interfaceName, const QMap<QString, QVariant> &changedProperties, const QStringList &invalidatedProperties);
 };
 
 namespace org {

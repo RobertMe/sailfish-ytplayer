@@ -143,6 +143,30 @@ YTListModel::find(const QString &property, const QVariant &value) const
 }
 
 void
+YTListModel::update(const QString &property, const QVariant &value, int row)
+{
+    if (row < 0 || row >= _list.size()) {
+        return;
+    }
+
+    if (_list[row].type() == QMetaType::QVariantMap) {
+        QVariantMap map = _list[row].toMap();
+        map[property] = value;
+        _list[row] = map;
+        emit dataChanged(index(row, 0, QModelIndex()), index(row, 0, QModelIndex()));
+    }
+}
+
+void
+YTListModel::update(const QString &property, const QVariant &value, const QString &searchProperty, const QVariant &searchValue)
+{
+    int index = find(searchProperty, searchValue);
+    if (index >= 0) {
+        update(property, value, index);
+    }
+}
+
+void
 YTListModel::remove(int index)
 {
     if (index < 0 || index >= _list.size()) {

@@ -18,9 +18,37 @@
 MprisApplication::MprisApplication(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)
     : QDBusAbstractInterface(service, path, staticInterfaceName(), connection, parent)
 {
+    connectPropertyChanged();
 }
 
 MprisApplication::~MprisApplication()
 {
+    disconnectPropertyChanged();
+}
+
+void
+MprisApplication::connectPropertyChanged()
+{
+    QStringList matchArgs;
+    matchArgs << interface();
+    connection().connect(service(), path(), "org.freedesktop.DBus.Properties", "PropertiesChanged", matchArgs, QString(), this, SLOT(onPropertiesChanged(QString,QMap<QString,QVariant>,QStringList)));
+}
+
+void
+MprisApplication::disconnectPropertyChanged()
+{
+    QStringList matchArgs;
+    matchArgs << interface();
+    connection().disconnect(service(), path(), "org.freedesktop.DBus.Properties", "PropertiesChanged", matchArgs, QString(), this, SLOT(onPropertiesChanged(QString,QMap<QString,QVariant>,QStringList)));
+}
+
+void
+MprisApplication::onPropertiesChanged(const QString &interfaceName, const QMap<QString, QVariant> &changedProperties, const QStringList &invalidatedProperties)
+{
+    Q_UNUSED(interfaceName)
+    Q_UNUSED(invalidatedProperties)
+    if (changedProperties.contains("Identity")) {
+        emit identityChanged();
+    }
 }
 

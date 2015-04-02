@@ -6,6 +6,7 @@
 #include <QThread>
 
 #include "YTListModel.h"
+#include "MprisApplication.h"
 
 class YTPlayerDiscovery : public QThread
 {
@@ -28,11 +29,14 @@ private:
     void handleServiceName(const QString &serviceName, QList<QVariant> &services);
     void appendServices(const QList<QVariant> &services);
 
+    QDBusConnection _connection;
     QDBusServiceWatcher _serviceWatcher;
     YTListModel *_model;
+    QHash<QString, MprisApplication*> _services;
 
 private slots:
     void onServiceOwnerChanged(const QString &service, const QString &oldOwner, const QString &newOwner);
+    void onIdentityChanged();
 };
 
 #endif // YTPLAYERDISCOVERY

@@ -5,11 +5,10 @@
 #include <QSettings>
 #include <QFile>
 
-#include "MprisApplication.h"
-
 YTPlayerDiscovery::YTPlayerDiscovery(QObject *parent) :
     QThread(parent),
-    _serviceWatcher(QString(), QDBusConnection::sessionBus())
+    _connection(QDBusConnection::sessionBus()),
+    _serviceWatcher(QString(), _connection)
 {
     moveToThread(this);
 }
@@ -26,7 +25,7 @@ YTPlayerDiscovery::run()
 {
     connect(&_serviceWatcher, &QDBusServiceWatcher::serviceOwnerChanged, this, &YTPlayerDiscovery::onServiceOwnerChanged);
     QList<QVariant> services;
-    QDBusReply<QStringList> registeredServiceNames = QDBusConnection::sessionBus().interface()->registeredServiceNames();
+    QDBusReply<QStringList> registeredServiceNames = _connection.interface()->registeredServiceNames();
     foreach (QString serviceName, registeredServiceNames.value()) {
         handleServiceName(serviceName, services);
     }
@@ -42,7 +41,7 @@ YTPlayerDiscovery::playIn(const QString &serviceName, const QString &videoId)
     QList<QVariant> args;
     args.append(QString("youtube:%1").arg(videoId));
     message.setArguments(args);
-    QDBusConnection::sessionBus().send(message);
+    _connection.send(message);
 }
 
 void
@@ -51,17 +50,15 @@ YTPlayerDiscovery::handleServiceName(const QString &serviceName, QList<QVariant>
     if (!serviceName.startsWith("org.mpris.MediaPlayer2."))
         return;
 
-    MprisApplication app(serviceName, "/org/mpris/MediaPlayer2", QDBusConnection::sessionBus());
-    app.moveToThread(this);
-    app.deleteLater();
-    if (!app.supportedUriSchemes().contains("youtube")) {
+    MprisApplication *app = new MprisApplication(serviceName, "/org/mpris/MediaPlayer2", _connection, this);
+    if (!app->supportedUriSchemes().contains("youtube")) {
         return;
     }
 
     QString name;
     QString iconPath;
 
-    QString desktopEntry = app.desktopEntry();
+    QString desktopEntry = app->desktopEntry();
     if (!desktopEntry.isEmpty()) {
         QSettings desktopFile(QString("/usr/share/applications/%1.desktop").arg(desktopEntry), QSettings::IniFormat);
         desktopFile.beginGroup("Desktop Entry");
@@ -76,9 +73,13 @@ YTPlayerDiscovery::handleServiceName(const QString &serviceName, QList<QVariant>
         }
     }
 
-    if (!app.identity().isEmpty()) {
-        name = app.identity();
+    if (!app->identity().isEmpty()) {
+        name = app->identity();
     }
+
+    connect(app, &MprisApplication::identityChanged, this, &YTPlayerDiscovery::onIdentityChanged);
+
+    _services.insert(serviceName, app);
 
     QVariantMap service;
     service.insert("serviceName", serviceName);
@@ -99,8 +100,11 @@ void
 YTPlayerDiscovery::onServiceOwnerChanged(const QString &service, const QString &oldOwner, const QString &newOwner)
 {
     if (!oldOwner.isEmpty()) {
-        if (service.startsWith("org.mpris.MediaPlayer2.")) {
+        MprisApplication *app = 0;
+        if (service.startsWith("org.mpris.MediaPlayer2.") && (app = _services.take(service))) {
             QMetaObject::invokeMethod(_model, "remove", Qt::QueuedConnection, Q_ARG(QString, "serviceName"), Q_ARG(QVariant, QVariant(service)));
+
+            app->deleteLater();
         }
     }
 
@@ -109,4 +113,15 @@ YTPlayerDiscovery::onServiceOwnerChanged(const QString &service, const QString &
         handleServiceName(service, services);
         appendServices(services);
     }
+}
+
+void
+YTPlayerDiscovery::onIdentityChanged()
+{
+    MprisApplication *app = qobject_cast<MprisApplication*>(sender());
+    if (!app) {
+        return;
+    }
+
+    QMetaObject::invokeMethod(_model, "update", Qt::QueuedConnection, Q_ARG(QString, "name"), Q_ARG(QVariant, QVariant(app->identity())), Q_ARG(QString, "serviceName"), Q_ARG(QVariant, QVariant(app->service())));
 }
