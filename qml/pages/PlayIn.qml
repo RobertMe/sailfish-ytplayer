@@ -44,6 +44,7 @@ Page {
     }
 
     SilicaListView {
+        id: listView
         anchors.fill: parent
 
         header: PageHeader {
@@ -59,6 +60,13 @@ Page {
 
         model: YTListModel {
             id: players
+        }
+
+        ViewPlaceholder {
+            enabled: listView.count == 0
+            //: Label to inform user now players are found
+            //% "No players to play YouTube video found"
+            text: qsTrId("ytplayer-label-no-players")
         }
 
         delegate: ListItem {

@@ -843,5 +843,10 @@ Remorse popup message telling the user video download will be removed</extracomm
         <extracomment>Menu option triggering play video in dialog</extracomment>
         <translation type="unfinished"></translation>
     </message>
+    <message id="ytplayer-label-no-players">
+        <source>No players to play YouTube video found</source>
+        <extracomment>Label to inform user now players are found</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>
